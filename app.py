@@ -17,7 +17,7 @@ class Users(db.Model, UserMixin):
     psw = db.Column(db.String(500), nullable=False)
 
     def __repr__(self):
-        return f'<users {self.id}>'
+        return f'<users {self.login} {self.id}>'
 
     def get_id(self):
         return self.id
