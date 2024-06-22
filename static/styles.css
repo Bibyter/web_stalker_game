@@ -49,6 +49,7 @@ body {
 
 .buttons {
     display: flex;
+    margin-bottom: 10px;
 }
 
 .button {
@@ -84,4 +85,20 @@ body {
 
 .vilaska_header {
     font-weight: bold;
+}
+
+.link {
+    font-family: Arial, Helvetica, sans-serif;
+    color:  white;
+    font-size: 1em;
+    text-align: center;
+}
+
+.header_1 {
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+    color:  white;
+    font-size: 1em;
+    text-align: center;
+    display: block;
 }

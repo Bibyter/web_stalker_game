@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="static/styles.css">
+    <style>
+        .div_1 {
+            margin-bottom: 10px;
+        }
+
+        .input_text {
+            display: inline;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .link {
+            width: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="game_div">
+        <label class="header_1">Авторизация</label>
+        <div class="content_1">
+            <form action="" method="post">
+                <div class="div_1">
+                    <label class="info_text_1">Логин: </label>
+                    <input class="input_text" type="text", name="login" value="" required>
+                </div>
+            
+                <div class="div_1">
+                    <label class="info_text_1">Пароль: </label>
+                    <input class="input_text" type="password", name="psw" value="" required>
+                </div>
+            
+                <div class="div_1">
+                    <label class="info_text_1">Запомнить меня:</label>
+                    <input type="checkbox", name="remainme">
+                </div>
+            
+                <div class="div_1">
+                    <input class="input_text" type="submit", value="Войти">
+                </div>
+            </form>
+        </div>
+
+        <a class="link" href="/register">Регистрация</a>
+    </div>
+</body>
+</html>
