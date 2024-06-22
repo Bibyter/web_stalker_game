@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STALKER</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+
+    <div class="game_div">
+        <div class="content_1 resource_panel">
+            <div class="resource_item">
+                <img class="resource_img" src="static/money.png">
+                <div class="resource_label">1000р</div>
+            </div>
+            <div class="resource_item">
+                <img class="resource_img" src="static/radiation.png">
+                <div class="resource_label">100</div>
+            </div>
+        </div>
+
+        {% block content %}{% endblock %}
+
+    </div>
+    
+</body>
+</html>

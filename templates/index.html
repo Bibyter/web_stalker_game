@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Пример верстки</title>
+{% extends 'game_base.html' %}
+
+{% block content %}
     <style>
         .buttons {
             display: flex;
@@ -19,7 +16,7 @@
             margin-right: 5px;
             border-radius: 5px;
             font-family: Arial, Helvetica, sans-serif;
-         
+        
             text-decoration: none;
             color:  white;
             font-size: 1em;
@@ -67,40 +64,22 @@
             overflow: hidden;
         }
     </style>
-    <link rel="stylesheet" href="static/styles.css" />
-</head>
-<body>
-    <div class="game_div">
 
-        <div class="content_1 resource_panel">
-            <div class="resource_item">
-                <img class="resource_img" src="static/money.png">
-                <div class="resource_label">1000р</div>
-            </div>
-            <div class="resource_item">
-                <img class="resource_img" src="static/radiation.png">
-                <div class="resource_label">100</div>
-            </div>
+    <div class="content_1 character_content">
+        <img class="character_full_growth" src="static/character_1_full_growth.png" alt="character">
+        <div class="character_stat_container">
+            <div class="character_stat_label">Здоровье: <span class="character_stat_value">100</span></div>
+            <div class="character_stat_label">Урон: <span class="character_stat_value">11</span></div>
         </div>
-
-        
-        <div class="content_1 character_content">
-            <img class="character_full_growth" src="static/character_1_full_growth.png" alt="character">
-            <div class="character_stat_container">
-                <div class="character_stat_label">Здоровье: <span class="character_stat_value">100</span></div>
-                <div class="character_stat_label">Урон: <span class="character_stat_value">11</span></div>
-            </div>
-        </div>
-        
-        <div class="buttons">
-            <a class="button button_vilaska" href="#">Вылазка</a>
-        </div>
-
-        <div class="buttons">
-            <a class="button" href="#">Торговец</a>
-            <a class="button" href="#">Профиль</a>
-        </div>
-        
     </div>
-</body>
-</html>
+
+    <div class="buttons">
+        <a class="button button_vilaska" href="#">Вылазка</a>
+    </div>
+
+    <div class="buttons">
+        <a class="button" href="#">Торговец</a>
+        <a class="button" href="#">Профиль</a>
+    </div>
+
+{% endblock %}

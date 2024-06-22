@@ -1,78 +1,6 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Пример верстки</title>
-    <style>
-        .buttons {
-            display: flex;
-        }
+{% extends 'game_base.html' %}
 
-        .button {
-            background-color: gray;
-            text-align: center;
-
-            width: 50%;
-            
-
-            margin-left: 5px;
-            margin-right: 5px;
-            border-radius: 5px;
-            font-family: Arial, Helvetica, sans-serif;
-         
-            text-decoration: none;
-            color:  white;
-            font-size: 1em;
-
-            padding: 5px;
-        }
-
-        .button_block {
-            display: block;
-            width: auto;
-        }
-
-        .button_vilaska {
-            background-color: green;
-            width: 100%;
-        }
-
-        .button a {
-            
-            text-decoration: none;
-            color:  white;
-            font-size: 0.9em;
-        }
-
-        .character_full_growth {
-            display: block;
-            max-width: 30%;
-            max-height: 200px;
-            padding: 10px;
-            float: right;
-            margin-right: 50px;
-        }
-
-        .character_stat_container {
-            margin-top: 10px;
-        }
-
-        .character_stat_label {
-            color:  white;
-            font-weight: bold;
-        }
-
-        .character_stat_value {
-            color:  #01aeb9;
-            font-weight: bold;
-        }
-
-        .info_text_1 {
-            color: white;   
-            text-align: center;
-        }
-    </style>
+{% block content %}
     <style>
         * {
             margin: 0px;
@@ -134,48 +62,35 @@
         .space {
             margin: 10px;
         }
+
+        .button_block {
+            display: block;
+            width: auto;
+        }
     </style>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="game_div">
 
-        <div class="content_1 resource_panel">
-            <div class="resource_item">
-                <img class="resource_img" src="./money.png">
-                <div class="resource_label">1000р</div>
-            </div>
-            <div class="resource_item">
-                <img class="resource_img" src="./energy.png">
-                <div class="resource_label">100</div>
-            </div>
-        </div>
+    <div class="content_1">
+        <div class="info_text_1 target_text">Лагерь бандитов</div>
 
-        <div class="content_1">
-            <div class="info_text_1 target_text">Лагерь бандитов</div>
-
-            <!-- <div class="enemy_image_div">
-                <img class="enemy_image" src="./group_bandit.png" alt="character">
-            </div> -->
-            
-            <img class="enemy_group" src="./group_bandit.png" alt="character">
-
-            <div class="space"></div>
-
-            <div class="enemy"></div>
-
-            <div class="info_text_1">Атакуй их</div>
-            <progress value="30" max="100"></progress>
-            <a class="button fire_button" href="#">Стрелять</a>
-
-            <div class="space"></div>
-
-            <div class="info_text_1">Моя прочность</div>
-            <progress value="80" max="100"></progress>
-        </div>
-
-        <a class="button button_block" href="#">Убежать</a>
+        <!-- <div class="enemy_image_div">
+            <img class="enemy_image" src="./group_bandit.png" alt="character">
+        </div> -->
         
+        <img class="enemy_group" src="static/group_bandit.png" alt="character">
+
+        <div class="space"></div>
+
+        <div class="enemy"></div>
+
+        <div class="info_text_1">Атакуй их</div>
+        <progress value="30" max="100"></progress>
+        <a class="button fire_button" href="#">Стрелять</a>
+
+        <div class="space"></div>
+
+        <div class="info_text_1">Моя прочность</div>
+        <progress value="80" max="100"></progress>
     </div>
-</body>
-</html>
+
+    <a class="button button_block" href="#">Убежать</a>
+{% endblock %}
