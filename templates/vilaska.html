@@ -83,8 +83,8 @@
         <div class="enemy"></div>
 
         <div class="info_text_1">Атакуй их</div>
-        <progress value="30" max="100"></progress>
-        <a class="button fire_button" href="#">Стрелять</a>
+        <progress value="{{enemy_hp}}" max="100"></progress>
+        <a class="button fire_button" href="{{url_for('vilaska_attack')}}">Стрелять</a>
 
         <div class="space"></div>
 

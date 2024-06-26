@@ -13,11 +13,16 @@ login_manager = LoginManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+VilaskaStateLobby = 0
+VilaskaStateGame = 1
+VilaskaStateFinished = 2
+
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(50), unique=True)
     psw = db.Column(db.String(500), nullable=False)
-    gamepr = db.relationship('GameProfile', uselist=False)
+    gamepr = db.relationship('GameProfile', uselist=False, backref='user')
+    vilaska_player = db.relationship('VilaskaPlayer', uselist=False, backref='user')
 
     def __repr__(self):
         return f'<user {self.login}:{self.id}>'
@@ -33,13 +38,27 @@ class GameProfile(db.Model):
     __tablename__ = 'game_profile'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    money = db.Column(db.Integer)
-    radiation = db.Column(db.Integer)
+    money = db.Column(db.Integer, nullable=False, default=0)
+    radiation = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
         return f'<game_profile {self.user_id}>'
 
 
+class Vilaska(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
+    state = db.Column(db.Integer, nullable=False, default=0) # 0-lobby, 1-play, 2-complete
+    players = db.relationship('VilaskaPlayer', uselist=True, backref='vilaska')
+    enemy_hp = db.Column(db.Integer, nullable=False, default=0)
+
+
+class VilaskaPlayer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    vilaska_id = db.Column(db.Integer, db.ForeignKey('vilaska.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    health = db.Column(db.Integer, nullable=False, default=0)
+    attack_cooldown = db.Column(db.Integer, nullable=False, default=0)
 
 
 
@@ -59,7 +78,8 @@ def register():
     if request.method == 'POST':
         user = Users(
             login=request.form['login'], 
-            psw=generate_password_hash(request.form['psw'])
+            psw=generate_password_hash(request.form['psw']),
+            gamepr=GameProfile()
         )
         db.session.add(user)
         db.session.commit()
@@ -96,21 +116,145 @@ def vilaska():
 @app.route('/vilaska_lobby')
 @login_required
 def vilaska_lobby():
-    return render_template('vilaska_lobby.html')
+    vilaska_player = current_user.vilaska_player
+
+    if not vilaska_player:
+        print('игрок не входит в состам вылазки')
+        return redirect(url_for('vilaska_list'))
+
+    vilaska = Vilaska.query.get(vilaska_player.vilaska_id)
+
+    return render_template('vilaska_lobby.html', vilaska=vilaska)
 
 @app.route('/vilaska_list')
 @login_required
 def vilaska_list():
-    return render_template('vilaska_list.html')
+    if current_user.vilaska_player:
+        return redirect(url_for('vilaska_lobby'))
+    return render_template('vilaska_list.html', vilaska_list=Vilaska.query.filter_by(state=VilaskaStateLobby).all())
+
+
+@app.route('/vilaska_create', methods=['POST'])
+@login_required
+def vilaska_create():
+    if request.method == 'POST':
+        v = Vilaska(
+            name = request.form['name']
+        )
+        db.session.add(v)
+        # vp = VilaskaPlayer(
+        #     vilaska_id = v.id,
+        #     user_id = current_user.get_id()
+        # )
+        #db.session.add(vp)
+        db.session.commit()
+    return redirect(url_for('vilaska_list'))
+
+
+@app.route('/vilaska_leave')
+@login_required
+def vilaska_leave():
+    if current_user.vilaska_player:
+        db.session.delete(current_user.vilaska_player)
+        db.session.commit()
+
+    return redirect(url_for('vilaska_list'))
+
+
+
+@app.route('/vilaska_join/<int:vilaska_id>')
+@login_required
+def vilaska_join(vilaska_id:int):
+    vilaska = Vilaska.query.get(vilaska_id)
+
+    if not vilaska:
+        print('вылазки с таким id не существует')
+        return redirect(url_for('vilaska_list'))
+
+    vilaska_player = VilaskaPlayer.query.filter_by(user_id=current_user.get_id()).first()
+
+    if vilaska_player:
+        print(f'Игрок уже находится в другой вылазке {vilaska_player}')
+        return redirect(url_for('vilaska_lobby'))
+    else:
+        new_vilaska_player = VilaskaPlayer(
+            vilaska_id = vilaska.id,
+            user_id = current_user.get_id(),
+        )
+        db.session.add(new_vilaska_player)
+        db.session.commit()
+        return redirect(url_for('vilaska_lobby'))
+
+
+@app.route('/vilaska_start')
+@login_required
+def vilaska_start():
+    if current_user.vilaska_player:
+        vilaska = Vilaska.query.get(current_user.vilaska_player.vilaska_id)
+        vilaska.state = VilaskaStateGame
+        vilaska.enemy_hp = 100
+
+        for player in vilaska.players:
+            player.health = 100
+            player.attack_cooldown = 1
+            db.session.add(player)
+
+        db.session.add(vilaska)
+        db.session.commit()
+
+    return redirect(url_for('vilaska_game'))
+
+
+@app.route('/vilaska_game')
+@login_required
+def vilaska_game():
+    if current_user.vilaska_player:
+        vilaska = Vilaska.query.get(current_user.vilaska_player.vilaska_id)
+        if vilaska.state == VilaskaStateGame:
+            return render_template('vilaska.html', enemy_hp=vilaska.enemy_hp)
+        if vilaska.state == VilaskaStateFinished:
+            return render_template('vilaska_complete.html')
+    return redirect(url_for('home'))
+
+
+@app.route('/vilaska_attack')
+@login_required
+def vilaska_attack():
+    if current_user.vilaska_player:
+        vilaska = Vilaska.query.get(current_user.vilaska_player.vilaska_id)
+        if vilaska.state == VilaskaStateGame:
+            vilaska.enemy_hp -= 10
+            if vilaska.enemy_hp <= 0:
+                vilaska_finish(vilaska)
+        db.session.add(vilaska)
+        db.session.commit()
+    return redirect(url_for('vilaska_game'))
+
+
+def vilaska_finish(vilaska:Vilaska):
+    vilaska.state = VilaskaStateFinished
+    for player in vilaska.players:
+        gamepr = player.user.gamepr
+        gamepr.money += 50
+        gamepr.radiation += 10
+        db.session.add(gamepr)
+
 
 @app.route('/vilaska_complete')
 @login_required
 def vilaska_complete():
-    return render_template('vilaska_complete.html')
+    pass
 
+def update_db():
+    with app.app_context():
+        db.create_all()
+
+        # for user in Users.query.all():
+        #     user.gamepr = GameProfile()
+
+        db.session.commit()
 
 if __name__ == '__main__':
-    # with app.app_context():
-    #     db.create_all()
+    #update_db()
 
     app.run(debug=True, host='0.0.0.0')

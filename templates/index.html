@@ -33,12 +33,6 @@
             font-weight: bold;
         }
 
-        .character_stat_value {
-            color:  #01aeb9;
-            font-family: monospace;
-            font-size: 1.1em;
-        }
-
         .character_content {
             overflow: hidden;
         }
@@ -64,7 +58,7 @@
     </div>
 
     <div class="buttons">
-        <a class="button button_vilaska" href="#">Вылазка</a>
+        <a class="button button_vilaska" href="{{ url_for('vilaska_list') }}">Вылазка</a>
     </div>
 
     <div class="buttons">

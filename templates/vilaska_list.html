@@ -22,22 +22,20 @@
         }
     </style>
 
-    <div class="content_1">
-        <div class="info_text_1 vilaska_header">Имя вылазки</div>
-        <div class="info_text_1">Кол-во участников 1 из 10</div>
-        <a class="button join_button" href="#">Присоединиться</a>
-    </div>
+    {% for v in vilaska_list %}
+        <div class="content_1">
+            <div class="info_text_1 vilaska_header">{{ v.name }}</div>
+            <div class="info_text_1">Кол-во участников {{ v.players|length }} из 10</div>
+            <a class="button join_button" href="{{ url_for('vilaska_join', vilaska_id=v.id) }}">Присоединиться</a>
+        </div>
+    {% endfor %}
 
-    <div class="content_1">
-        <div class="info_text_1 vilaska_header">Имя вылазки</div>
-        <div class="info_text_1">Кол-во участников 1 из 10</div>
-        <a class="button join_button" href="#">Присоединиться</a>
-    </div>
-
-    <div class="content_1">
-        <input type="text"></input>
-        <a class="button button_block" href="#">Создать вылазку</a>
-    </div>
+    <form action="/vilaska_create" method="post">
+        <div class="content_1">
+            <input type="text", name="name"></input>
+            <input type="submit" value="Создать вылазку">
+        </div>
+    </form>
 
     <a class="button button_block" href="#">Главная</a>
 {% endblock %}

@@ -102,3 +102,21 @@ body {
     text-align: center;
     display: block;
 }
+
+.character_stat_value {
+    color:  #01aeb9;
+    font-family: monospace;
+    font-size: 1.1em;
+}
+
+.character_bonus_value {
+    color:  #60f939;
+    font-family: monospace;
+    font-size: 1.1em;
+}
+
+.character_fine_value {
+    color:  #f93939;
+    font-family: monospace;
+    font-size: 1.1em;
+}

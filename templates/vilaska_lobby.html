@@ -8,16 +8,16 @@
     </style>
 
     <div class="content_1">
-        <div class="info_text_1 vilaska_header">Имя вылазки</div>
+        <div class="info_text_1 vilaska_header">{{ vilaska.name }}</div>
     </div>
 
     <div class="content_1">
         <div class="info_text_1 vilaska_header">Игроки</div>
-        <div class="info_text_1 player_name">1. Сергей</div>
-        <div class="info_text_1 player_name">2. Вова</div>
-        <div class="info_text_1 player_name">3. Никита</div>
+        {% for player in vilaska.players %}
+            <div class="info_text_1 player_name">{{ loop.index }}. {{ player.user.login }}</div>
+        {% endfor %}
     </div>
 
-    <a class="button button_block" style="background-color: green;" href="#">Выдвигаемся</a>
-    <a class="button button_block" href="#">Выйти</a>
+    <a class="button button_block" style="background-color: green;" href="{{ url_for('vilaska_start') }}">Выдвигаемся</a>
+    <a class="button button_block" href="{{ url_for('vilaska_leave') }}">Выйти</a>
 {% endblock %}
