@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_login import LoginManager, login_required, login_user, UserMixin, logout_user, current_user
+from flask_login import LoginManager, login_required, login_user, UserMixin, logout_user
+from flask_login import current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,13 +10,31 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///my.db'
 app.config["SECRET_KEY"] = '3b05ed0ff4efbd12ea076b94f9f42b225a81d8529881c8cd473e7a2f6f11'
 
 login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 VilaskaStateLobby = 0
 VilaskaStateGame = 1
-VilaskaStateFinished = 2
+VilaskaStateWin = 2
+VilaskaStateFail = 3
+
+
+
+class VilaskaPlayer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    vilaska_id = db.Column(db.Integer, db.ForeignKey('vilaska.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    health = db.Column(db.Integer, nullable=False, default=0)
+    attack_cooldown = db.Column(db.Integer, nullable=False, default=0)
+
+    def take_damage(self, amount:int):
+        self.health = max(self.health - amount, 0)
+
+    def is_alive(self):
+        return self.health > 0
+
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -32,6 +51,9 @@ class Users(db.Model, UserMixin):
 
     def get_login(self):
         return self.login
+
+current_user: Users
+
 
 
 class GameProfile(db.Model):
@@ -51,14 +73,23 @@ class Vilaska(db.Model):
     state = db.Column(db.Integer, nullable=False, default=0) # 0-lobby, 1-play, 2-complete
     players = db.relationship('VilaskaPlayer', uselist=True, backref='vilaska')
     enemy_hp = db.Column(db.Integer, nullable=False, default=0)
+    log_messages = db.relationship('VilaskaLogMessage', uselist=True, backref='vilaska')
+
+    def is_all_player_of_dead(self):
+        for player in self.players:
+            if player.is_alive():
+                return False
+        return True
+    
+    def enemy_take_damage(self, amount:int):
+        self.enemy_hp = max(self.enemy_hp - amount, 0)
 
 
-class VilaskaPlayer(db.Model):
+class VilaskaLogMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     vilaska_id = db.Column(db.Integer, db.ForeignKey('vilaska.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    health = db.Column(db.Integer, nullable=False, default=0)
-    attack_cooldown = db.Column(db.Integer, nullable=False, default=0)
+    value = db.Column(db.String(300), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
 
 
@@ -117,13 +148,12 @@ def vilaska():
 @login_required
 def vilaska_lobby():
     vilaska_player = current_user.vilaska_player
-
     if not vilaska_player:
         print('игрок не входит в состам вылазки')
         return redirect(url_for('vilaska_list'))
-
-    vilaska = Vilaska.query.get(vilaska_player.vilaska_id)
-
+    vilaska: Vilaska = Vilaska.query.get(vilaska_player.vilaska_id)
+    if vilaska.state == VilaskaStateGame:
+        return redirect(url_for('vilaska_game'))
     return render_template('vilaska_lobby.html', vilaska=vilaska)
 
 @app.route('/vilaska_list')
@@ -211,9 +241,11 @@ def vilaska_game():
     if current_user.vilaska_player:
         vilaska = Vilaska.query.get(current_user.vilaska_player.vilaska_id)
         if vilaska.state == VilaskaStateGame:
-            return render_template('vilaska.html', enemy_hp=vilaska.enemy_hp)
-        if vilaska.state == VilaskaStateFinished:
-            return render_template('vilaska_complete.html')
+            return render_template('vilaska.html', enemy_hp=vilaska.enemy_hp, player_hp=current_user.vilaska_player.health, vilaska=vilaska)
+        if vilaska.state == VilaskaStateWin or vilaska.state == VilaskaStateFail:
+            db.session.delete(current_user.vilaska_player)
+            db.session.commit()
+            return render_template('vilaska_complete.html', is_win=vilaska.state == VilaskaStateWin)
     return redirect(url_for('home'))
 
 
@@ -221,18 +253,29 @@ def vilaska_game():
 @login_required
 def vilaska_attack():
     if current_user.vilaska_player:
-        vilaska = Vilaska.query.get(current_user.vilaska_player.vilaska_id)
-        if vilaska.state == VilaskaStateGame:
-            vilaska.enemy_hp -= 10
+        vilaska: Vilaska = Vilaska.query.get(current_user.vilaska_player.vilaska_id)
+        
+        if vilaska.state == VilaskaStateGame and current_user.vilaska_player.health > 0:
+            vilaska.enemy_take_damage(10)
+            vilaska.log_messages.append(VilaskaLogMessage(value=f'<span class="log_message_nickname">{current_user.get_login()}</span> нанес врагу {10} урона!'))
+
             if vilaska.enemy_hp <= 0:
                 vilaska_finish(vilaska)
-        db.session.add(vilaska)
+
+            current_user.vilaska_player.take_damage(30)
+            vilaska.log_messages.append(VilaskaLogMessage(value=f'<span class="log_message_nickname">{current_user.get_login()}</span> получил в ответ {30} урона!'))
+
+            if vilaska.is_all_player_of_dead():
+                vilaska.state = VilaskaStateFail
+
         db.session.commit()
     return redirect(url_for('vilaska_game'))
 
 
+
+
 def vilaska_finish(vilaska:Vilaska):
-    vilaska.state = VilaskaStateFinished
+    vilaska.state = VilaskaStateWin
     for player in vilaska.players:
         gamepr = player.user.gamepr
         gamepr.money += 50

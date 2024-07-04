@@ -120,3 +120,8 @@ body {
     font-family: monospace;
     font-size: 1.1em;
 }
+
+.log_message_nickname {
+    color: greenyellow;
+    text-decoration: underline;
+}

@@ -2,14 +2,18 @@
 
 {% block content %}
     <div class="content_1">
-        <div class="info_text_1 vilaska_header">Вылазка окончена</div>
+        {% if is_win: %}
+            <div class="info_text_1 vilaska_header">Вы победили</div>
+        {% else %}
+            <div class="info_text_1 vilaska_header">Вы проиграли</div>
+        {% endif %}
     </div>
+
     <div class="content_1">
         <div class="info_text_1 vilaska_header">Предметы которые вы нашли в лагере</div>
         <div style="height: 15px;"></div>
         <div class="info_text_1" style="text-align: left;">Деньги: <span class="character_bonus_value">+50 руб</span></div>
         <div class="info_text_1" style="text-align: left;">Радиация: <span class="character_fine_value">+10 ед</span></div>
-
     </div>
 
     <a class="button button_block" href="{{ url_for('home') }}">Главное меню</a>

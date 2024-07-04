@@ -67,6 +67,10 @@
             display: block;
             width: auto;
         }
+        
+        .log_message {
+            text-align: left;
+        }
     </style>
 
     <div class="content_1">
@@ -89,8 +93,12 @@
         <div class="space"></div>
 
         <div class="info_text_1">Моя прочность</div>
-        <progress value="80" max="100"></progress>
+        <progress value="{{player_hp}}" max="100"></progress>
+
+        {% for msg in vilaska.log_messages[::-1]: %}
+        <div class="info_text_1 log_message">{% autoescape false %}{{msg.value}}{% endautoescape %}</div>
+        {% endfor %}
     </div>
 
-    <a class="button button_block" href="#">Убежать</a>
+    <!-- <a class="button button_block" href="#">Убежать</a> -->
 {% endblock %}
