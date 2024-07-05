@@ -26,7 +26,7 @@
 
         .target_text {
             font-weight: bold;
-            color: red;
+            color: #f93939;
         }
 
         .enemy_image_div {
@@ -86,15 +86,24 @@
 
         <div class="enemy"></div>
 
-        <div class="info_text_1">Атакуй их</div>
-        <progress value="{{enemy_hp}}" max="100"></progress>
-        <a class="button fire_button" href="{{url_for('vilaska_attack')}}">Стрелять</a>
+        {% if player_hp == 0 %}
+            <div class="info_text_1 target_text">Вы умерли!</div>
+            <div class="info_text_1">Осталось живых игроков: {{ vilaska.get_live_players_count() }}</div>
+        {% else %}
+            <div class="info_text_1">Атакуй их</div>
+            <progress value="{{enemy_hp}}" max="100"></progress>
+            <a class="button fire_button" href="{{url_for('vilaska_attack')}}">Стрелять</a>
 
-        <div class="space"></div>
+            <div class="space"></div>
 
-        <div class="info_text_1">Моя прочность</div>
-        <progress value="{{player_hp}}" max="100"></progress>
+            <div class="info_text_1">Моя прочность</div>
+            <progress value="{{player_hp}}" max="100"></progress>
+        {% endif %}
 
+        
+    </div>
+
+    <div class="content_1">
         {% for msg in vilaska.log_messages[::-1]: %}
         <div class="info_text_1 log_message">{% autoescape false %}{{msg.value}}{% endautoescape %}</div>
         {% endfor %}

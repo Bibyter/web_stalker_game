@@ -69,7 +69,7 @@ class GameProfile(db.Model):
 
 class Vilaska(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
+    name = db.Column(db.String(50), nullable=False, unique=False)
     state = db.Column(db.Integer, nullable=False, default=0) # 0-lobby, 1-play, 2-complete
     players = db.relationship('VilaskaPlayer', uselist=True, backref='vilaska')
     enemy_hp = db.Column(db.Integer, nullable=False, default=0)
@@ -83,6 +83,13 @@ class Vilaska(db.Model):
     
     def enemy_take_damage(self, amount:int):
         self.enemy_hp = max(self.enemy_hp - amount, 0)
+
+    def get_live_players_count(self):
+        count: int = 0
+        for player in self.players:
+            if player.is_alive():
+                count += 1
+        return count
 
 
 class VilaskaLogMessage(db.Model):
@@ -241,7 +248,10 @@ def vilaska_game():
     if current_user.vilaska_player:
         vilaska = Vilaska.query.get(current_user.vilaska_player.vilaska_id)
         if vilaska.state == VilaskaStateGame:
-            return render_template('vilaska.html', enemy_hp=vilaska.enemy_hp, player_hp=current_user.vilaska_player.health, vilaska=vilaska)
+            return render_template('vilaska.html', 
+                                   enemy_hp=vilaska.enemy_hp, 
+                                   player_hp=current_user.vilaska_player.health, 
+                                   vilaska=vilaska)
         if vilaska.state == VilaskaStateWin or vilaska.state == VilaskaStateFail:
             db.session.delete(current_user.vilaska_player)
             db.session.commit()
@@ -257,13 +267,13 @@ def vilaska_attack():
         
         if vilaska.state == VilaskaStateGame and current_user.vilaska_player.health > 0:
             vilaska.enemy_take_damage(10)
-            vilaska.log_messages.append(VilaskaLogMessage(value=f'<span class="log_message_nickname">{current_user.get_login()}</span> нанес врагу {10} урона!'))
+            vilaska.log_messages.append(VilaskaLogMessage(value=f'<span class="log_message_nickname">{current_user.get_login()}</span> нанес врагу <span class="log_message_damage_green">{10}</span> урона!'))
 
             if vilaska.enemy_hp <= 0:
                 vilaska_finish(vilaska)
 
             current_user.vilaska_player.take_damage(30)
-            vilaska.log_messages.append(VilaskaLogMessage(value=f'<span class="log_message_nickname">{current_user.get_login()}</span> получил в ответ {30} урона!'))
+            vilaska.log_messages.append(VilaskaLogMessage(value=f'<span class="log_message_nickname">{current_user.get_login()}</span> получил в ответ  <span class="log_message_damage_red">{30}</span> урона!'))
 
             if vilaska.is_all_player_of_dead():
                 vilaska.state = VilaskaStateFail

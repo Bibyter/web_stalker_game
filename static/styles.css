@@ -122,6 +122,18 @@ body {
 }
 
 .log_message_nickname {
-    color: greenyellow;
+    color: #60f939;
     text-decoration: underline;
+}
+
+.log_message_damage_green {
+    color:  #60f939;
+    font-family: monospace;
+    font-size: 1.1em;
+}
+
+.log_message_damage_red {
+    color:  #f93939;
+    font-family: monospace;
+    font-size: 1.1em;
 }
